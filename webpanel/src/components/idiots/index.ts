@@ -1,0 +1,1 @@
+export { IdiotsList } from './IdiotsList'

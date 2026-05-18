@@ -1,0 +1,12 @@
+nick		slave1
+nickappend	_-^`|
+realname	Phantom
+myipv4		0.0.0.0
+vhost		0.0.0.0
+
+hub			203.0.113.10 9000 <link-password>
+listen		8000
+
+server		irc.example.net 6667
+
+keepnick	1

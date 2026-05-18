@@ -1,0 +1,99 @@
+# Phantom IRC Bot - Build Artifacts and Runtime Files
+
+# Compiled binaries
+*.o
+*.so
+*.a
+psotnic
+psotnic-*
+bin/
+
+# Build system generated files
+Makefile
+Makefile.debug
+Makefile.dynamic
+config.h
+seed.h
+firemake.h
+
+# Module compiled binaries
+modules/*.so
+
+# Test artifacts
+tests/a.out
+tests/a.exe
+tests/*.o
+
+# Runtime files
+*.txt
+*.dat
+*.log
+*.pid
+memory.db
+memory.db-*
+.notifier-status.json
+
+# Configuration files (contain sensitive data)
+# Uncomment if you want to ignore all config files
+# *.cfg
+# *.conf
+bin/*.cfg
+*.ul
+*.key
+*.crt
+*.csr
+easy-rsa/keys/
+
+# Backup files
+*~
+*.bak
+*.swp
+*.swo
+.*.swp
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+.project
+.cproject
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Core dumps
+core
+core.*
+
+# Documentation build artifacts
+docs/html/
+docs/latex/
+
+# Build artifacts from configure/make
+.vite/
+bin/phantom
+bin/phantom.exe
+hidden-seed-functions.c
+make-hiddenseed
+phantom
+phantom-*
+
+# PID files
+pid.*
+*.ul
+
+# Generated IRC backtrace files
+.irc-backtrace-*
+
+# Cygwin specific
+*.exe
+
+# Node modules
+webpanel/node_modules/
+webpanel/dist/
+webpanel/.env*
+!webpanel/.env*.example
+webpanel/.notifier-status.json

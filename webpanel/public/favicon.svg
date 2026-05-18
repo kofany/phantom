@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="phGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4cc9f0" />
+      <stop offset="1" stop-color="#a78bfa" />
+    </linearGradient>
+    <linearGradient id="phGradDark" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0b0b1a" />
+      <stop offset="1" stop-color="#16213e" />
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#phGradDark)" stroke="url(#phGrad)" stroke-width="2" />
+  <g fill="url(#phGrad)" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="700" font-size="26" text-anchor="middle">
+    <text x="32" y="42" letter-spacing="-1">PH</text>
+  </g>
+  <circle cx="52" cy="14" r="3" fill="#4cc9f0">
+    <animate attributeName="opacity" values="1;0.3;1" dur="2.4s" repeatCount="indefinite" />
+  </circle>
+</svg>

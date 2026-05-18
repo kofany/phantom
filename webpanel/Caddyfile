@@ -1,0 +1,19 @@
+# Caddy configuration for Phantom panel
+# Usage: caddy run --config Caddyfile
+#
+# Replace panel.example.com with your actual domain
+# Caddy will automatically obtain Let's Encrypt certificate
+
+panel.example.com {
+    # Static frontend files
+    root * /path/to/webpanel/dist
+    file_server
+
+    # WebSocket proxy to Bun
+    handle /ws {
+        reverse_proxy localhost:8080
+    }
+
+    # SPA fallback
+    try_files {path} /index.html
+}

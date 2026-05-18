@@ -1,0 +1,194 @@
+XDCC-Search Spam Protection Module
+====================================
+
+Author: Phantom contributors
+Version: 1.0.0
+License: GPL
+
+OVERVIEW
+--------
+Professional spam detection and protection module designed to automatically 
+ban users who post xdcc-search.com spam links on IRC channels.
+
+The module provides intelligent pattern matching, configurable ban durations,
+per-channel protection settings, and comprehensive partyline/botnet management
+interface.
+
+FEATURES
+--------
+* Automatic detection of xdcc-search.com spam (case-insensitive)
+* Instant kick+ban for detected spammers
+* User-friendly Polish kickban reasons
+* Configurable ban duration (default: 1 hour)
+* Per-channel enable/disable protection
+* Global module on/off switch
+* Exemption for users with bot flags (HAS_O, HAS_V, HAS_F)
+* Comprehensive partyline status command (.xdccstatus)
+* Full botnet configuration support (.bc commands)
+* Automatic configuration file management
+
+DETECTION PATTERNS
+------------------
+The module detects the following patterns (case-insensitive):
+  - xdcc-search.com
+  - xdcc-search
+  - xdccsearch
+
+CONFIGURATION
+-------------
+
+Partyline Commands:
+  .xdccstatus [<channel>]  - Show protection status on local bot
+
+Botnet Commands:
+  .bc <bot> xdccstatus [<channel>]                    - Show status on remote bot
+  .bc <bot> xdccset enabled <0|1>                     - Enable/disable globally
+  .bc <bot> xdccset ban-time <seconds>                - Set ban duration
+  .bc <bot> xdccchanset <channel> protection <0|1>    - Enable/disable per channel
+
+Global Settings (xdccset):
+  enabled                  - Enable/disable spam protection (default: 1)
+  ban-time                 - Ban duration in seconds (default: 3600 = 1 hour)
+  cfg-save-delay           - Delay before saving config (default: 20 seconds)
+
+Channel Settings (xdccchanset):
+  protection               - Enable/disable protection on channel (default: 1)
+
+EXAMPLES
+--------
+
+# Show global status
+.xdccstatus
+
+# Show status for specific channel
+.xdccstatus #channel
+
+# Enable protection globally
+.bc bot1 xdccset enabled 1
+
+# Set ban duration to 2 hours (7200 seconds)
+.bc bot1 xdccset ban-time 7200
+
+# Enable protection on specific channel
+.bc bot1 xdccchanset #channel protection 1
+
+# Disable protection on specific channel
+.bc bot1 xdccchanset #channel protection 0
+
+# Remote status check
+.bc bot1 xdccstatus #channel
+
+KICKBAN REASON
+--------------
+The module uses creative Polish kickban reasons:
+
+For bans >= 1 hour:
+  "XDCC-Search spam! Torrent nie działa? Może przestań spamować! Ban: Xh"
+
+For bans < 1 hour:
+  "XDCC-Search spam! Torrent nie działa? Może przestań spamować! Ban: Xmin"
+
+Translation:
+  "XDCC-Search spam! Torrent not working? Maybe stop spamming! Ban: X hours/minutes"
+
+SECURITY FEATURES
+-----------------
+* Silent mode - only network admins (HAS_N) can use status commands
+* No information leakage to unauthorized users
+* Automatic exemption for bot's trusted users
+* Protection against reconnaissance attempts
+* Logging to partyline for monitoring
+
+CONFIGURATION FILE
+------------------
+The module automatically manages its configuration file:
+  Location: <botdir>/modules/xdccspam.txt
+
+Format:
+  xdccset <setting> <value>
+  xdccchanset <#channel> <setting> <value>
+
+Example xdccspam.txt:
+  # Global settings
+  xdccset enabled 1
+  xdccset ban-time 3600
+
+  # Channel settings
+  xdccchanset #channel1 protection 1
+  xdccchanset #channel2 protection 0
+
+The configuration file is automatically created on first run and saved 
+after each change (with configurable delay to reduce disk I/O).
+
+INSTALLATION
+------------
+1. Module is compiled automatically with: make xdccspam
+2. Load the module on partyline: .load xdccspam
+3. Configure as needed using .bc commands
+4. Module loads automatically on bot restart if added to config
+
+TECHNICAL DETAILS
+-----------------
+Hook Points:
+  - privmsg           : Detects spam in channel messages
+  - partylineCmd      : Handles .xdccstatus command
+  - botnetcmd         : Handles .bc xdccset/xdccchanset commands
+  - timer             : Executes scheduled configuration saves
+  - userlistLoaded    : Loads configuration after userlist
+  - new_CHANLIST      : Initializes new channels
+  - del_CHANLIST      : Cleans up deleted channels
+
+Classes:
+  - xdccspam_settings : Global module settings
+  - xdccspam_chanset  : Per-channel settings
+
+Access Control:
+  - Status commands require HAS_N flag (network admin)
+  - Configuration requires botnet access
+  - Protected users: HAS_O, HAS_V, HAS_F
+
+Ban Implementation:
+  - Uses chan->knockout() for kick+ban with timed expiry
+  - Automatically adds *!ident@host ban mask
+  - Logs all bans to partyline for monitoring
+
+TROUBLESHOOTING
+---------------
+
+Problem: Module doesn't ban spammers
+Solution: Check if protection is enabled:
+  - .xdccstatus #channel
+  - .bc <bot> xdccset enabled 1
+  - .bc <bot> xdccchanset #channel protection 1
+
+Problem: Configuration not saving
+Solution: Check file permissions on modules directory:
+  - chmod 755 <botdir>/modules/
+  - Check available disk space
+
+Problem: Can't see .xdccstatus output
+Solution: Ensure you have HAS_N flag (network admin):
+  - .whois <yournick>
+  - Ask bot owner for +n flag
+
+Problem: Users with bot flags get banned
+Solution: This is by design - users with HAS_O, HAS_V, HAS_F are automatically 
+exempted. If they're getting banned, they don't have proper bot flags.
+
+CHANGELOG
+---------
+v1.0.0 (2025-11-27)
+  - Initial release
+  - Basic spam detection and ban functionality
+  - Partyline and botnet configuration
+  - Status command with formatted output
+  - Automatic configuration file management
+  - Per-channel protection settings
+
+CREDITS
+-------
+Developed by: Phantom contributors
+Based on Psotnic IRC bot framework
+Inspired by similar spam protection modules
+
+For bug reports and feature requests, contact the Phantom contributors.

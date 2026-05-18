@@ -1,0 +1,12 @@
+nick		hub
+nickappend	_-^`|
+realname	Phantom
+myipv4		0.0.0.0
+vhost		0.0.0.0
+listen		9000
+listen		127.0.0.1 5555 webapi
+
+server		irc.example.net 6667
+server		irc6.example.net 6667
+
+ownerpass	<generated-md5-ownerpass>

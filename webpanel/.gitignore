@@ -1,0 +1,8 @@
+node_modules/
+coverage/
+*.tsbuildinfo
+.DS_Store
+.env
+.env.local
+.env.notifier
+.notifier-status.json

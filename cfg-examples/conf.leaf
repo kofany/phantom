@@ -1,0 +1,11 @@
+nick		leaf
+nickappend	_-^`|
+realname	Phantom
+myipv4		0.0.0.0
+vhost		0.0.0.0
+
+hub			203.0.113.10 8000 <link-password>
+
+server		irc.example.net 6667
+
+keepnick	1

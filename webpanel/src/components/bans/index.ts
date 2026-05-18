@@ -1,0 +1,1 @@
+export { BansView } from './BansView'
