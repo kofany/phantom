@@ -1527,7 +1527,7 @@ static void webapi_handle_del_chan(inetconn *c, const char *json)
     }
 
     net.send(HAS_B, "%s %s", S_RMCHAN, channel);
-    net.irc.send("PART %s :%s", channel, (const char *) set.PARTREASON);
+    net.irc.send("PART %s :%s", channel, S_BRAND_REASON);
     userlist.updated();
 
     JsonResponse r;

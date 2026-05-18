@@ -1048,7 +1048,7 @@ int pl_delchan(inetconn *c, char *data, char arg[][MAX_LEN], int argc)
     {
         c->send("Removing %s from channel list", arg[2]);
         net.send(HAS_B, "%s %s", S_RMCHAN, arg[2]);
-        net.irc.send("PART %s :%s", arg[2], (const char *) set.PARTREASON);
+        net.irc.send("PART %s :%s", arg[2], S_BRAND_REASON);
         userlist.updated();
         return SUCCESS;
     }
@@ -1386,7 +1386,7 @@ int pl_mcycle(inetconn *c, char *data, char arg[][MAX_LEN], int argc)
     {
         if (ME.findChannel(arg[1]))
         {
-            net.irc.send("PART %s :%s", arg[1], !set.CYCLEREASON.isDefault() ? (const char *) set.CYCLEREASON : (const char *) set.PARTREASON);
+            net.irc.send("PART %s :%s", arg[1], S_BRAND_REASON);
             ME.rejoin(arg[1], set.CYCLE_DELAY);
         }
         net.send(HAS_B, "%s %s", S_CYCLE, arg[1]);
@@ -1409,7 +1409,7 @@ int pl_rcycle(inetconn *c, char *data, char arg[][MAX_LEN], int argc)
     {
         if (!strcmp(arg[1], config.handle))
         {
-            net.irc.send("PART %s :%s", arg[2], !set.CYCLEREASON.isDefault() ? (const char *) set.CYCLEREASON : (const char *) set.PARTREASON);
+            net.irc.send("PART %s :%s", arg[2], S_BRAND_REASON);
             ME.rejoin(arg[1], set.CYCLE_DELAY);
             net.send(HAS_N, "Doing cycle on %s", arg[2]);
         }

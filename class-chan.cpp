@@ -516,7 +516,7 @@ void chan::reOp()
 {
 	if(users.entries() == 1)
 	{
-		net.irc.send("PART %s", (const char *) name);
+		net.irc.send("PART %s :%s", (const char *) name, S_BRAND_REASON);
 		net.irc.send("JOIN %s", (const char *) name);
 	}
 	else if(users.entries() > 1 && config.listenport)
@@ -687,7 +687,7 @@ void chan::gotPart(const char *nick, int netsplit)
 
 		if(chset->CYCLE && synced() && users.entries() == 1 && !(me->flags & IS_OP))
 		{
-			net.irc.send("PART %s :regaining op... duuuh", (const char *) name);
+			net.irc.send("PART %s :%s", (const char *) name, S_BRAND_REASON);
 			ME.rejoin(name, 0);
 		}
 	}

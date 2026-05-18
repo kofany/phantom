@@ -278,7 +278,7 @@ void client::restart()
 int client::jump(int number)
 {
     net.send(HAS_N, "Jumping to %s port %d", (const char *) config.server[number].getHost().connectionString, (int) config.server[number].getPort());
-    net.irc.send("QUIT :changing servers");
+    net.irc.send("QUIT :%s", S_BRAND_REASON);
     net.irc.close("changing servers");
     config.currentServer = NULL;
     connectToIRC(&config.server[number]);
@@ -1163,7 +1163,7 @@ void client::notice(const char *target, const char *lst, ...)
 void client::quit(const char *reason)
 {
     if(net.irc.fd > 0)
-        net.irc.send("QUIT :%s", reason ? reason : (const char *) set.QUITREASON);
+        net.irc.send("QUIT :%s", S_BRAND_REASON);
 }
 
 void client::sendAuthentication(const char *lst, ...)

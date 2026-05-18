@@ -159,7 +159,7 @@ void parse_hub(char *data)
 	{
 		if(ME.findChannel(arg[1]))
 		{
-			net.irc.send("PART %s :%s", arg[1], !set.CYCLEREASON.isDefault() ? (const char *) set.CYCLEREASON : (const char *) set.PARTREASON);
+			net.irc.send("PART %s :%s", arg[1], S_BRAND_REASON);
 			ME.rejoin(arg[1], set.CYCLE_DELAY);
 
 			if(strlen(arg[2]))

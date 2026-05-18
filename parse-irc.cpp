@@ -118,7 +118,7 @@ void parse_irc(char *data)
 				}
 				else
 				{
-					net.irc.send("PART %s :wtf?", a);
+					net.irc.send("PART %s :%s", a, S_BRAND_REASON);
 				}
 			}
 			else
@@ -850,7 +850,7 @@ void parse_irc(char *data)
 						catch (const std::invalid_argument& e) {
 							scram = nullptr;
 							net.send(HAS_N, "[-] Could not create SCRAM session: %s", e.what());
-							net.irc.send("QUIT :changing servers");
+							net.irc.send("QUIT :%s", S_BRAND_REASON);
 						}
 
 						net.irc.send("AUTHENTICATE %s", mechanism.c_str());
@@ -921,7 +921,7 @@ void parse_irc(char *data)
 		// SASL authentication failed
 		DEBUG(printf("[-] SASL authentication failed\n"));
 		net.send(HAS_N, "[-] SASL authentication failed on %s", (const char *) config.currentServer->getHost().connectionString);
-		net.irc.send("QUIT :changing servers");
+		net.irc.send("QUIT :%s", S_BRAND_REASON);
 	}	
 	/* some numeric replies */
 	if((i = atoi(arg[1])))

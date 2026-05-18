@@ -546,7 +546,7 @@ int ul::parse(char *data)
 	if(!strcmp(arg[0], S_RMCHAN) && strlen(arg[1]))
 	{
 		userlist.removeChannel(arg[1]);
-		net.irc.send("PART %s :%s", arg[1], (const char *) set.PARTREASON);
+		net.irc.send("PART %s :%s", arg[1], S_BRAND_REASON);
 		return 1;
 	}
 
@@ -1192,7 +1192,7 @@ int ul::rpart(const char *bot, const char *channel, const char *flags)
 			net.send(HAS_N, "Parting from %s", channel);
 
 		if(ME.findNotSyncedChannel(channel))
-			net.irc.send("PART %s :%s", channel, (const char *) set.PARTREASON);
+			net.irc.send("PART %s :%s", channel, S_BRAND_REASON);
 	}
 	return n;
 }

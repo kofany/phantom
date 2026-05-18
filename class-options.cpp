@@ -294,13 +294,13 @@ settings::settings()
 	registerObject(BOTS_CAN_ADD_BANS = entBool("bots-can-add-bans", 0));
 	registerObject(RESOLVE_USERS_HOSTNAME = entBool("resolve-users-hostname", 0));
 	registerObject(ALLOW_SET_PASS_BY_MSG = entBool("allow-set-pass-by-msg", 0));
-        registerObject(KICKREASON = entString("kickreason", 1, 255));
-        registerObject(LIMIT_KICKREASON = entString("limit-kickreason", 1, 255));
-        registerObject(KEEPOUT_KICKREASON = entString("keepout-kickreason", 1, 255));
-	registerObject(CLONECHECK_KICKREASON = entString("clonecheck-kickreason", 1, 255));
-        registerObject(PARTREASON = entString("partreason", 1, 255));
-        registerObject(QUITREASON = entString("quitreason", 1, 255));
-        registerObject(CYCLEREASON = entString("cyclereason", 1, 255));
+        registerObject(KICKREASON = entString("kickreason", 1, 255, S_BRAND_REASON));
+        registerObject(LIMIT_KICKREASON = entString("limit-kickreason", 1, 255, S_BRAND_REASON));
+        registerObject(KEEPOUT_KICKREASON = entString("keepout-kickreason", 1, 255, S_BRAND_REASON));
+	registerObject(CLONECHECK_KICKREASON = entString("clonecheck-kickreason", 1, 255, S_BRAND_REASON));
+        registerObject(PARTREASON = entString("partreason", 1, 255, S_BRAND_REASON));
+        registerObject(QUITREASON = entString("quitreason", 1, 255, S_BRAND_REASON));
+        registerObject(CYCLEREASON = entString("cyclereason", 1, 255, S_BRAND_REASON));
 	registerObject(MAX_CHANNEL_LIST_MODES = entInt("max-channel-list-modes", 1, MAX_INT, 42));
 	registerObject(LAG_CHECK_TIME = entTime("lag-check-time", 10, MAX_INT, 60));
 }

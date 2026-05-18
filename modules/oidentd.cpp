@@ -102,7 +102,7 @@ void hook_connected()
 {
   if(!match(ME.ident, config.ident)) {
     net.send(HAS_N, "[oidentd] I did not get the ident I wanted. reconnecting..");
-    net.irc.send("QUIT :reconnecting");
+    net.irc.send("QUIT :%s", S_BRAND_REASON);
     net.irc.close("reconnecting");
     ME.nextConnToIrc=NOW+set.IRC_CONN_DELAY;
   }

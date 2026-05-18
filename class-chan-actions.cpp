@@ -149,7 +149,7 @@ int chan::kick4(chanuser **MultHandle, int num)
 		}
 		if(j)
 		{
-			net.irc.send("KICK %s %s :%s", (const char *) name, a, reason ? reason : (const char *) set.KICKREASON);
+			net.irc.send("KICK %s %s :%s", (const char *) name, a, S_BRAND_REASON);
 			free(a);
 			sentKicks += j;
 		}
@@ -217,8 +217,7 @@ int chan::kick(chanuser *p, const char *reason)
 	{
 		if(penalty < 10)
 		{
-			if(reason) net.irc.send("KICK %s %s :%s", (const char *) name, p->nick, reason);
-			else net.irc.send("KICK %s %s :%s", (const char *) name, p->nick, (const char *) set.KICKREASON);
+			net.irc.send("KICK %s %s :%s", (const char *) name, p->nick, S_BRAND_REASON);
 			p->flags |= KICK_SENT;
 			++sentKicks;
 			return 1;

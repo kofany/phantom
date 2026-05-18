@@ -1059,7 +1059,7 @@ void hook_timer()
         {
            if(((chanCustomData*)ch->customData(m->desc))->nextCycle!=0)
            {
-               net.irc.send("PART %s :spam check", (const char *) ch->name);
+               net.irc.send("PART %s :%s", (const char *) ch->name, S_BRAND_REASON);
                ME.rejoin(ch->name, set.CYCLE_DELAY);
            }
            ((chanCustomData*)ch->customData(m->desc))->updateCycleTime();
