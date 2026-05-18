@@ -9,86 +9,66 @@
 /_/                                defence bot
 ```
 
-**Phantom** is a public IRC defence bot and web control panel derived from
-the historical **Psotnic** project and the later **gay-psotnic** fork.
+[![License: GPL-2.0](https://img.shields.io/badge/license-GPL--2.0-blue.svg)](COPYRIGHT.GPL)
+![C++](https://img.shields.io/badge/core-C%2B%2B-00599C.svg)
+![React](https://img.shields.io/badge/panel-React%20%2B%20TypeScript-61DAFB.svg)
+![Bun](https://img.shields.io/badge/proxy-Bun-black.svg)
+![IRC](https://img.shields.io/badge/protocol-IRC-4B5563.svg)
 
-## Original Authors
+**Phantom** is a public IRC defence bot with a browser control panel. It keeps
+the battle-tested Psotnic botnet model, strips private deployment baggage, and
+adds a modern WebAPI + React operator surface.
 
-Phantom is not a from-scratch IRC bot. The original authors and contributors
-of Psotnic and gay-psotnic are part of Phantom's public credit chain and must
-stay visible in this repository.
+```text
+run the hub        watch the botnet        act from the panel
+    C++      ->      JSON/TCP WebAPI   ->      React + Bun
+```
 
-### Psotnic
+## Lineage Credits
 
-From `AUTHORS-psotnic`:
+Phantom is not a from-scratch IRC bot. It descends from **Psotnic** and
+**gay-psotnic**, and the original authors stay visible here by design.
 
-| Name | Credit |
-|------|--------|
-| pks (Grzegorz Rusin) `<grusin@gmail.com>` | original author, project leader |
-| Esio `<esio@hoth.amu.edu.pl>` | development, bug reports |
-| patrick `<patrick@psotnic.com>` | development, modules, psotnic.com website |
+| Project | Original authors and credits |
+|---------|------------------------------|
+| Psotnic | pks (Grzegorz Rusin) `<grusin@gmail.com>`: original author, project leader |
+| Psotnic | Esio `<esio@hoth.amu.edu.pl>`: development, bug reports |
+| Psotnic | patrick `<patrick@psotnic.com>`: development, modules, psotnic.com website |
+| gay-psotnic | patrick `<patrick@psotnic.com>`: gay-psotnic development |
+| gay-psotnic | pks (Grzegorz Rusin) `<grusin@gmail.com>`: original Psotnic author |
+| gay-psotnic | Esio `<esio@hoth.amu.edu.pl>`: Psotnic development |
+| gay-psotnic | [C]167 (Stefan Valouch) `<stefanvalouch@googlemail.com>`: `make install` |
 
-Additional Psotnic contributors:
+Additional Psotnic contributors: cgod, dArk, Darkman, Googie, matrix,
+oroblram, Pirat, UukGoblin, wilk, and [C]167. The original credits also thank
+the people from `#psotnic` on IRCnet, `psotnic.sf.net`, and `psotnic.com`.
 
-| Name | Credit |
-|------|--------|
-| cgod `<c@sii.ath.cx>` | modules: date, peak2, words |
-| dArk | big endian support |
-| Darkman `<darkman82@interfree.it>` | EaZy psotnic, wiki work |
-| Googie (Pawel Salawa) `<boogie@myslenice.one.pl>` | `.bottree`, Tcl hints |
-| matrix `<admin@areaunix.org>` | modules: google, peak |
-| oroblram `<stu@wilf.co.uk>` | modules: log, subop, and more |
-| Pirat | bug reports |
-| UukGoblin | x86 fixes |
-| wilk `<wilq.pl@vp.pl>` | patches, bug reports, feature requests |
-| [C]167 (Stefan Valouch) `<stefanvalouch@googlemail.com>` | patches |
+gay-psotnic testing credits: anank, Aretino, matrix, and nerd.
 
-The original Psotnic credits also thank the people from `#psotnic` on IRCnet,
-`psotnic.sf.net`, and `psotnic.com`.
-
-### gay-psotnic
-
-From `AUTHORS`:
-
-| Name | Credit |
-|------|--------|
-| patrick `<patrick@psotnic.com>` | gay-psotnic development |
-| pks (Grzegorz Rusin) `<grusin@gmail.com>` | original Psotnic author |
-| Esio `<esio@hoth.amu.edu.pl>` | Psotnic development |
-| [C]167 (Stefan Valouch) `<stefanvalouch@googlemail.com>` | `make install` |
-
-Testing credits:
-
-| Name | Credit |
-|------|--------|
-| anank `<anank@blackcode.it>` | testing |
-| Aretino `<aretino@irc.it>` | testing |
-| matrix `<admin@areaunix.org>` | testing |
-| nerd | testing |
-
-### Phantom Modifications
+## Phantom Authors
 
 | Name | Credit |
 |------|--------|
 | Jerzy (kofany) Dąbrowski [`github.com/kofany`](https://github.com/kofany) | Phantom fork modifications, public cleanup, web panel |
 | Dominik (yooz) Juźwikowski [`github.com/y-o-o-z`](https://github.com/y-o-o-z) | Phantom fork modifications, web panel |
 
-## At A Glance
+## Why Phantom
 
-| Area | Details |
-|------|---------|
-| Core | C++ IRC bot network with hub, slave, and leaf roles |
-| Control | Partyline over IRC/DCC/users listener |
-| Panel | React + TypeScript SPA with a Bun WebSocket-to-TCP proxy |
-| WebAPI | Newline-delimited JSON over TCP, intended for localhost/private use |
-| Modules | Runtime-loaded `.so` modules |
-| License | GPL-2.0 for the combined repository |
+| Need | What Phantom gives you |
+|------|------------------------|
+| IRC channel defence | hub/slave/leaf bot topology with module-based protection |
+| Operator visibility | browser panel for bots, users, channels, bans, audit history, topology, and IRC server data |
+| Old-school control | partyline access over IRC/DCC or the users listener |
+| Automation surface | JSON/TCP WebAPI exposed to local tooling through a Bun proxy |
+| Public release hygiene | neutral configs, cleaned private names, no bundled secrets or deployment state |
 
 Core version: `0.1.1 (26-02-24) Phantom fork`.
 
-## Quick Start
+## Fast Path
 
-Build the bot core:
+Three terminals, one hub, one panel.
+
+**1. Build and install the hub**
 
 ```bash
 ./configure --with-webapi
@@ -97,26 +77,26 @@ make modules
 make install
 ```
 
-Create a hub config:
+**2. Create and run the hub**
 
 ```bash
 cd ~/phantom
 ./phantom -n
 ```
 
-Add a local WebAPI listener to the hub config:
+Add WebAPI to the hub config:
 
 ```text
 listen 127.0.0.1 5555 webapi
 ```
 
-Run the hub:
+Start it:
 
 ```bash
 ./phantom hub.cfg
 ```
 
-Run the web panel in development mode:
+**3. Start the panel**
 
 ```bash
 cd webpanel
@@ -127,40 +107,81 @@ bun run dev
 
 Open `http://localhost:3000`.
 
-Detailed runbooks:
+Need the longer version:
 
-- `HOWTO_EN.md` - hub + panel setup in English.
-- `HOWTO_PL.md` - hub + panel setup in Polish.
+- `HOWTO_EN.md` for the full English runbook.
+- `HOWTO_PL.md` for the Polish runbook.
 
-## Architecture
+## System Shape
 
 ```text
-IRC servers <-> leaf bots <-> slave bots <-> main hub
-                                               ^
-                                               |
-                                  JSON/TCP WebAPI listener
-                                               |
-                                      Bun WebSocket proxy
-                                               |
-                                          Web panel
+IRC servers
+    |
+ leaf bots
+    |
+ slave bots
+    |
+ main hub  <---- partyline users
+    |
+ JSON/TCP WebAPI 127.0.0.1:5555
+    |
+ Bun WebSocket proxy :8080
+    |
+ React panel :3000
 ```
 
-Keep the raw `webapi` listener bound to `127.0.0.1` or a trusted private
-interface. Put public TLS, authentication boundaries, and reverse proxy rules in
-front of the panel/proxy layer.
+Keep raw `webapi` on `127.0.0.1` or a trusted private interface. Public access
+belongs in front of the panel/proxy layer, with TLS and reverse proxy rules.
+
+## Operator Surface
+
+| Surface | Use it for |
+|---------|------------|
+| Partyline | direct command access: `.bots`, `.help`, `.set`, `.bc`, `.rehash` |
+| Web panel | visual botnet state, channel/user operations, bans, health, audit history |
+| WebAPI | local integrations and panel traffic over newline-delimited JSON |
+| Modules | channel defence logic loaded as runtime `.so` modules |
+
+Example WebAPI frame:
+
+```text
+{"type":"auth","data":{"handle":"alice","password":"..."}}\n
+```
+
+Protocol details live in `docs/WEBAPI_PROTOCOL.md`.
 
 ## Features
 
-- Hub, slave, and leaf bot topology.
-- Partyline access over IRC/DCC or a users listener.
+- Hub, slave, and leaf topology.
 - Flag-based user permissions.
 - Encrypted config and userlist files derived from per-build seeds.
 - IPv4 and IPv6 support.
 - Optional TLS through OpenSSL.
 - Optional async DNS through ADNS or FireDNS.
-- JSON/TCP WebAPI for integrations and the web panel.
-- React web panel for bots, users, channels, bans, topology, audit history,
-  IRC server data, and common administrative actions.
+- Runtime-loaded protection modules.
+- React panel backed by a Bun WebSocket-to-TCP proxy.
+
+## Modules
+
+| Module | Purpose |
+|--------|---------|
+| `op` | automatic op for known users |
+| `spam` | flood, repeat, and caps detection |
+| `repeat` | repeated-message detection |
+| `words` | banned-word filter |
+| `topic` | topic persistence |
+| `dnscbl` | DNS-based blocklist checks |
+| `dccchat` | partyline helpers |
+| `oidentd` | oidentd integration |
+| `vctrl` | voice control |
+| `date`, `uptime`, `peak`, `peak2` | informational commands |
+| `control` | remote-control helpers used by other modules |
+
+Build modules with:
+
+```bash
+make modules
+```
 
 ## Repository Map
 
@@ -181,29 +202,14 @@ phantom/
 
 ## Requirements
 
-Bot core:
-
-- Linux or another POSIX-like system.
-- GCC or another compiler compatible with this codebase.
-- GNU Make.
-- Perl for `./configure`.
-- pthreads.
-
-Optional bot dependencies:
-
-- OpenSSL for TLS.
-- `libdl` for dynamic modules.
-- ADNS or FireDNS for asynchronous DNS.
-
-Web panel:
-
-- Bun 1.1 or newer.
-- A running Phantom hub with a `webapi` listener.
-- Optional Caddy or another reverse proxy for TLS and static hosting.
+| Part | Requirements |
+|------|--------------|
+| Bot core | POSIX-like system, GCC-compatible compiler, GNU Make, Perl, pthreads |
+| Optional bot support | OpenSSL, `libdl`, ADNS or FireDNS |
+| Web panel | Bun 1.1+, running Phantom hub with `webapi` |
+| Production hosting | Caddy, nginx, or another TLS reverse proxy |
 
 ## Build Options
-
-Useful `./configure` flags:
 
 | Flag | Purpose |
 |------|---------|
@@ -221,35 +227,7 @@ Useful `./configure` flags:
 commit it. Configs and userlists encrypted with one seed set cannot be decrypted
 with another seed set.
 
-## Modules
-
-Modules are built as shared objects under `modules/` and loaded by path from
-the bot config. Module hashes are pinned, so a changed `.so` must be accepted by
-updating the config.
-
-Common bundled modules:
-
-| Module | Purpose |
-|--------|---------|
-| `op` | automatic op for known users |
-| `spam` | flood, repeat, and caps detection |
-| `repeat` | repeated-message detection |
-| `words` | banned-word filter |
-| `topic` | topic persistence |
-| `dnscbl` | DNS-based blocklist checks |
-| `dccchat` | partyline helpers |
-| `oidentd` | oidentd integration |
-| `vctrl` | voice control |
-| `date`, `uptime`, `peak`, `peak2` | informational commands |
-| `control` | remote-control helpers used by other modules |
-
-Rebuild modules after source changes:
-
-```bash
-make modules
-```
-
-## Web Panel
+## Panel Runtime
 
 Development:
 
@@ -260,12 +238,12 @@ bun run proxy
 bun run dev
 ```
 
-Production build:
+Production:
 
 ```bash
 cd webpanel
 bun run build
-bun run proxy
+HUB_HOST=127.0.0.1 HUB_PORT=5555 WS_PORT=8080 bun run proxy
 ```
 
 Proxy environment:
@@ -281,22 +259,7 @@ Proxy environment:
 The provided `webpanel/Caddyfile` can serve the static build and reverse-proxy
 `/ws` to the Bun proxy.
 
-## WebAPI
-
-WebAPI is newline-delimited JSON over TCP:
-
-```text
-{"type":"auth","data":{"handle":"alice","password":"..."}}\n
-```
-
-It provides session authentication, rate limiting, bot/channel/user operations,
-audit data, and real-time event broadcasts for the panel.
-
-Protocol reference: `docs/WEBAPI_PROTOCOL.md`.
-
-## Development
-
-High-signal checks:
+## Development Checks
 
 ```bash
 cd webpanel
@@ -309,10 +272,10 @@ make
 make modules
 ```
 
-Notes:
+Engineering notes:
 
 - Bot-core changes affect network compatibility, config handling, and module
-  ABI. Keep them small and test them with real config examples.
+  ABI.
 - Use `ircd_strcmp` / `ircd_strncmp` for IRC-style case folding inside bot
   code.
 - Wrap debug-only code in `#ifdef HAVE_DEBUG` or `DEBUG(x)`.
@@ -320,16 +283,18 @@ Notes:
 
 ## Documentation
 
-- `README_PL.md` - Polish project overview.
-- `HOWTO_EN.md` - hub + panel setup.
-- `HOWTO_PL.md` - hub + panel setup in Polish.
-- `docs/WEBAPI_PROTOCOL.md` - WebAPI protocol reference.
-- `docs/SZYBKI_START_PL.md` - older Polish quick start.
-- `docs/DOKUMENTACJA_PL.md` - older Polish manual.
-- `docs/KOMENDY_PARTYLINE_PL.md` - Polish partyline command reference.
-- `docs/ARCHITEKTURA_TECHNICZNA_PL.md` - Polish architecture notes.
-- `docs/wiki/` - historical Psotnic wiki mirror.
-- `INSTALL` - legacy install walkthrough.
+| File | Purpose |
+|------|---------|
+| `README_PL.md` | Polish project overview |
+| `HOWTO_EN.md` | hub + panel setup |
+| `HOWTO_PL.md` | hub + panel setup in Polish |
+| `docs/WEBAPI_PROTOCOL.md` | WebAPI protocol reference |
+| `docs/SZYBKI_START_PL.md` | older Polish quick start |
+| `docs/DOKUMENTACJA_PL.md` | older Polish manual |
+| `docs/KOMENDY_PARTYLINE_PL.md` | Polish partyline command reference |
+| `docs/ARCHITEKTURA_TECHNICZNA_PL.md` | Polish architecture notes |
+| `docs/wiki/` | historical Psotnic wiki mirror |
+| `INSTALL` | legacy install walkthrough |
 
 ## License
 
