@@ -22,6 +22,16 @@ const NOTIFIER_ENV_FILE = process.env.NOTIFIER_ENV_FILE || `${process.cwd()}/.en
 const NOTIFIER_STATUS_FILE = process.env.NOTIFIER_STATUS_FILE || `${process.cwd()}/.notifier-status.json`;
 const NOTIFIER_STATUS_CACHE_MS = parseInt(process.env.NOTIFIER_STATUS_CACHE_MS || "5000", 10);
 
+// Optional REST endpoint for unattended leaf bootstrap (POST /api/bot-add).
+// Enabled only when all three env vars are set. The proxy itself talks to the
+// hub as a service user — callers never see the hub credentials, only the
+// shared API key.
+const BOT_ADD_API_KEY = process.env.BOT_ADD_API_KEY || "";
+const BOT_ADD_HUB_HANDLE = process.env.BOT_ADD_HUB_HANDLE || "";
+const BOT_ADD_HUB_PASS = process.env.BOT_ADD_HUB_PASS || "";
+const BOT_ADD_TIMEOUT_MS = parseInt(process.env.BOT_ADD_TIMEOUT_MS || "10000", 10);
+const BOT_ADD_ENABLED = !!BOT_ADD_API_KEY && !!BOT_ADD_HUB_HANDLE && !!BOT_ADD_HUB_PASS;
+
 function formatError(err: unknown) {
   if (err instanceof Error) {
     return {
@@ -581,6 +591,190 @@ function verifyKnownPanelToken(token: string): PanelTokenAuthResult {
   return { ok: true, handle: entry.handle };
 }
 
+// ─── Bot-add REST endpoint helpers ──────────────────────────────────────────
+
+type BotAddRequest = {
+  nick: string;
+  password: string;
+  addr: string;
+  host_masks?: string[];
+};
+
+type BotAddCommandResult = {
+  cmd: string;
+  result: "ok" | "error";
+  output?: string[];
+};
+
+type BotAddResult = {
+  ok: boolean;
+  nick: string;
+  commands: BotAddCommandResult[];
+  error?: string;
+};
+
+function bytesEqualConstantTime(a: string, b: string) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/**
+ * Open a one-shot WebAPI session against the hub as a service user and
+ * run the canonical leaf-bootstrap sequence:
+ *   .+bot <nick> <addr>
+ *   .chattr <nick> +l
+ *   .chpass <nick> <password>
+ *   .+host <nick> <mask>   (for each entry in host_masks, optional)
+ *   .save
+ *
+ * The hub's WebAPI replies with `cmd_ok` per command (or `error`); we step
+ * through `commands[]` and resolve when the final cmd is acknowledged.
+ */
+function executeHubBotAdd(reqBody: BotAddRequest): Promise<BotAddResult> {
+  const commands: string[] = [
+    `+bot ${reqBody.nick} ${reqBody.addr}`,
+    `chattr ${reqBody.nick} +l`,
+    `chpass ${reqBody.nick} ${reqBody.password}`,
+    ...(reqBody.host_masks ?? []).map(m => `+host ${reqBody.nick} ${m}`),
+    `save`,
+  ];
+
+  return new Promise<BotAddResult>(resolve => {
+    const results: BotAddCommandResult[] = [];
+    let cmdIndex = -1; // -1 = waiting for auth_ok
+    let pendingOutput: string[] = [];
+    let socket: import("bun").Socket | null = null;
+    let done = false;
+
+    const finish = (ok: boolean, error?: string) => {
+      if (done) return;
+      done = true;
+      try { socket?.end(); } catch { /* ignore */ }
+      resolve({ ok, nick: reqBody.nick, commands: results, error });
+    };
+
+    const timeout = setTimeout(() => finish(false, "timeout"), BOT_ADD_TIMEOUT_MS);
+
+    const sendNext = () => {
+      if (!socket || cmdIndex < 0 || cmdIndex >= commands.length) return;
+      const cmdStr = commands[cmdIndex];
+      const sep = cmdStr.indexOf(" ");
+      const cmd = sep === -1 ? cmdStr : cmdStr.slice(0, sep);
+      const args = sep === -1 ? "" : cmdStr.slice(sep + 1);
+      try {
+        socket.write(JSON.stringify({ type: "cmd", data: { cmd, args } }) + "\n");
+      } catch (err) {
+        clearTimeout(timeout);
+        finish(false, `write failed: ${String(err)}`);
+      }
+    };
+
+    Bun.connect({
+      hostname: HUB_HOST,
+      port: HUB_PORT,
+      tls: HUB_SSL ? { rejectUnauthorized: false } : false,
+      socket: {
+        open(sock) {
+          socket = sock;
+          try {
+            sock.write(JSON.stringify({
+              type: "auth",
+              data: { handle: BOT_ADD_HUB_HANDLE, password: BOT_ADD_HUB_PASS },
+            }) + "\n");
+          } catch (err) {
+            clearTimeout(timeout);
+            finish(false, `auth write failed: ${String(err)}`);
+          }
+        },
+        data(_sock, data) {
+          const lines = data.toString().split("\n").filter(l => l.trim());
+          for (const line of lines) {
+            let msg: { type?: string; data?: Record<string, unknown> };
+            try { msg = JSON.parse(line); } catch { continue; }
+
+            if (cmdIndex === -1) {
+              if (msg.type === "auth_ok") {
+                cmdIndex = 0;
+                sendNext();
+              } else if (msg.type === "auth_fail") {
+                clearTimeout(timeout);
+                finish(false, `auth_fail: ${String(msg.data?.reason ?? "unknown")}`);
+                return;
+              }
+              continue;
+            }
+
+            if (msg.type === "cmd_ok") {
+              results.push({
+                cmd: commands[cmdIndex],
+                result: "ok",
+                output: pendingOutput.length ? [...pendingOutput] : undefined,
+              });
+              pendingOutput = [];
+              cmdIndex++;
+              if (cmdIndex >= commands.length) {
+                clearTimeout(timeout);
+                finish(true);
+                return;
+              }
+              sendNext();
+            } else if (msg.type === "error") {
+              const detail = String(msg.data?.message ?? msg.data?.code ?? "error");
+              results.push({ cmd: commands[cmdIndex], result: "error", output: [detail] });
+              clearTimeout(timeout);
+              finish(false, detail);
+              return;
+            } else if (msg.type === "chat" || msg.type === "output" || msg.type === "system") {
+              const text = typeof msg.data?.text === "string" ? msg.data.text : "";
+              if (text) pendingOutput.push(text);
+            }
+          }
+        },
+        error(_sock, err) {
+          clearTimeout(timeout);
+          finish(false, `socket error: ${formatError(err).message}`);
+        },
+        close() {
+          clearTimeout(timeout);
+          if (!done) finish(false, "connection closed prematurely");
+        },
+      },
+    }).catch(err => {
+      clearTimeout(timeout);
+      finish(false, `connect failed: ${formatError(err).message}`);
+    });
+  });
+}
+
+function validateBotAddRequest(raw: unknown): { ok: true; req: BotAddRequest } | { ok: false; detail: string } {
+  if (!raw || typeof raw !== "object") return { ok: false, detail: "body must be a JSON object" };
+  const o = raw as Record<string, unknown>;
+  const nick = typeof o.nick === "string" ? o.nick : "";
+  const password = typeof o.password === "string" ? o.password : "";
+  const addr = typeof o.addr === "string" ? o.addr : "";
+  if (!nick || !password || !addr) return { ok: false, detail: "nick, password, addr are required" };
+  if (!/^[A-Za-z0-9_\-\[\]\\^`{|}]{1,32}$/.test(nick)) return { ok: false, detail: "nick contains invalid characters" };
+  if (password.length > 128 || /[\r\n\0]/.test(password)) return { ok: false, detail: "password too long or has control chars" };
+  if (addr.length > 255 || /[\r\n\0\s]/.test(addr)) return { ok: false, detail: "addr too long or has whitespace/control chars" };
+
+  let host_masks: string[] | undefined;
+  if (o.host_masks !== undefined) {
+    if (!Array.isArray(o.host_masks)) return { ok: false, detail: "host_masks must be an array" };
+    if (o.host_masks.length > 16) return { ok: false, detail: "too many host_masks (max 16)" };
+    host_masks = [];
+    for (const m of o.host_masks) {
+      if (typeof m !== "string" || !m || m.length > 255 || /[\r\n\0\s]/.test(m)) {
+        return { ok: false, detail: "each host_masks entry must be a non-empty whitespace-free string ≤255 chars" };
+      }
+      host_masks.push(m);
+    }
+  }
+
+  return { ok: true, req: { nick, password, addr, host_masks } };
+}
+
 Bun.serve({
   hostname: "0.0.0.0",
   port: WS_PORT,
@@ -628,6 +822,65 @@ Bun.serve({
         return jsonResponse(
           { error: "status_failed", detail: String(err) },
           { status: 503 },
+        );
+      }
+    }
+
+    // Unattended leaf bootstrap. Caller authenticates with a shared bearer
+    // token (BOT_ADD_API_KEY); the proxy then talks to the hub as a service
+    // user that has permission to run .+bot / .chattr / .chpass / .+host /
+    // .save. The hub's partyline TCP listener does NOT need to be public for
+    // this to work — everything happens over the existing WebAPI socket the
+    // proxy already uses for the panel.
+    if (url.pathname === "/api/bot-add" && req.method === "POST") {
+      if (!BOT_ADD_ENABLED) {
+        return jsonResponse(
+          {
+            error: "bot_add_disabled",
+            detail: "set BOT_ADD_API_KEY, BOT_ADD_HUB_HANDLE, BOT_ADD_HUB_PASS to enable",
+          },
+          { status: 503 },
+        );
+      }
+
+      const token = bearerToken(req);
+      if (!token || !bytesEqualConstantTime(token, BOT_ADD_API_KEY)) {
+        log("warn", "bot-add rejected: bad token", { clientIP: (req as any).headers?.get?.("x-forwarded-for") || "?" });
+        return jsonResponse({ error: "unauthorized" }, { status: 401 });
+      }
+
+      let raw: unknown;
+      try {
+        raw = await req.json();
+      } catch {
+        return jsonResponse({ error: "bad_json", detail: "body is not valid JSON" }, { status: 400 });
+      }
+
+      const validated = validateBotAddRequest(raw);
+      if (!validated.ok) {
+        return jsonResponse({ error: "bad_request", detail: validated.detail }, { status: 400 });
+      }
+
+      log("info", "bot-add request accepted", {
+        nick: validated.req.nick,
+        addr: validated.req.addr,
+        host_masks: validated.req.host_masks?.length ?? 0,
+      });
+
+      try {
+        const result = await executeHubBotAdd(validated.req);
+        log(result.ok ? "info" : "error", "bot-add finished", {
+          nick: validated.req.nick,
+          ok: result.ok,
+          error: result.error,
+          steps: result.commands.length,
+        });
+        return jsonResponse(result, { status: result.ok ? 200 : 502 });
+      } catch (err) {
+        log("error", "bot-add crashed", { error: formatError(err) });
+        return jsonResponse(
+          { ok: false, nick: validated.req.nick, commands: [], error: String(err) },
+          { status: 500 },
         );
       }
     }
